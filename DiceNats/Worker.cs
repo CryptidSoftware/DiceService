@@ -16,14 +16,12 @@ namespace DiceNats
         private readonly ILogger<Worker> _logger;
         private readonly ConnectionFactory _connectionFactory;
         private readonly Random _random;
-        private readonly byte[] _response;
 
         public Worker(ILogger<Worker> logger, ConnectionFactory connectionFactory)
         {
             _logger = logger;
             _connectionFactory = connectionFactory;
             _random = new System.Random();
-            _response = Encoding.UTF8.GetBytes("This is reply");
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -39,11 +37,11 @@ namespace DiceNats
 
         private void HandleMessage(Object sender, MsgHandlerEventArgs args)
         {
-            //_logger.LogInformation(Encoding.UTF8.GetString(args.Message.Data));
-            //var req = JsonSerializer.Deserialize<RollRequest>(Encoding.UTF8.GetString(args.Message.Data));
-            //var results = Enumerable.Range(0,req.NumDice).Select(i => _random.Next(req.SidesPerDie) + 1);
-            //var response = new RollReply {Rolls = results.ToArray()};
-            args.Message.Respond(_response);
+            _logger.LogInformation(Encoding.UTF8.GetString(args.Message.Data));
+            var req = JsonSerializer.Deserialize<RollRequest>(Encoding.UTF8.GetString(args.Message.Data));
+            var results = Enumerable.Range(0,req.NumDice).Select(i => _random.Next(req.SidesPerDie) + 1);
+            var response = new RollReply {Rolls = results.ToArray()};
+            args.Message.Respond(response);
         }
 
     }
