@@ -41,7 +41,7 @@ namespace DiceNats
             var req = JsonSerializer.Deserialize<RollRequest>(Encoding.UTF8.GetString(args.Message.Data));
             var results = Enumerable.Range(0,req.NumDice).Select(i => _random.Next(req.SidesPerDie) + 1);
             var response = new RollReply {Rolls = results.ToArray()};
-            args.Message.Respond(response);
+            args.Message.Respond(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response)));
         }
 
     }
