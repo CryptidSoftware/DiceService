@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NATS.Client;
+using Iolaus.Nats;
+using Iolaus.Observer;
 
 namespace DiceNats
 {
@@ -19,8 +17,17 @@ namespace DiceNats
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddHostedService<Worker>();
-                    services.AddSingleton<ConnectionFactory>(new ConnectionFactory());
+                    services.AddSingleton<ObserverRouter>((sp) => {
+                        var or = new ObserverRouter(sp);
+                        or.LoadHandlers(typeof(Program).Assembly);
+                        return or;
+                    });
+                    services.Configure<NatsListenerOptions>( opt => {
+                        opt.Topic = "dice.roll";
+                    });
+                    services.AddSingleton<IConnection>( (provider) => new ConnectionFactory().CreateConnection());
+                    services.AddTransient<NatsListenerServices>();
+                    services.AddHostedService<NatsListener>();
                 });
     }
 }
